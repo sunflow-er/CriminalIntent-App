@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 
 class CrimeFragment : Fragment() {
     private lateinit var crime : Crime
+
     private lateinit var titleField: EditText
     private lateinit var dateButton : Button
     private lateinit var solvedCheckBox : CheckBox
@@ -35,6 +36,7 @@ class CrimeFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_crime, container, false)
 
+        // 참조값 가져오기
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
         dateButton.apply {
@@ -52,7 +54,7 @@ class CrimeFragment : Fragment() {
         // titleField 리스너 설정
         val titleWatcher = object: TextWatcher { // TextWatcher 인터페이스를 구현하는 익명 클래스 생성
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                TODO("Not yet implemented")
+
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { // s : 사용자가 입력한 데이터 값을 가지고 있음
@@ -60,7 +62,7 @@ class CrimeFragment : Fragment() {
             }
 
             override fun afterTextChanged(s: Editable?) {
-                TODO("Not yet implemented")
+
             }
         }
         titleField.addTextChangedListener(titleWatcher)
