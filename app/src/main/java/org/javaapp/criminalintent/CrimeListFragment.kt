@@ -5,11 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.Recycler
+import org.w3c.dom.Text
 
 private const val TAG = "CrimeListFragment"
 
@@ -39,9 +41,16 @@ class CrimeListFragment : Fragment() {
         return view
     }
 
+    private inner class CrimeHolder(view : View) : RecyclerView.ViewHolder(view) {
+        // view(item view)의 TextView 참조
+        val titleTextView : TextView = itemView.findViewById(R.id.crime_title)
+        val dateTextView : TextView = itemView.findViewById(R.id.crime_date)
+    }
+
     companion object {
         fun newInstance() : CrimeListFragment {
             return CrimeListFragment()
         }
     }
+
 }
