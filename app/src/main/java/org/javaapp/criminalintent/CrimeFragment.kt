@@ -3,6 +3,7 @@ package org.javaapp.criminalintent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,6 +13,7 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import java.util.UUID
 
+private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
 
 class CrimeFragment : Fragment() {
@@ -31,7 +33,8 @@ class CrimeFragment : Fragment() {
 
         crime = Crime()
 
-        
+        val crimeId : UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
+        Log.d(TAG, "args bundle crime ID : $crimeId")
     }
 
     override fun onCreateView(
