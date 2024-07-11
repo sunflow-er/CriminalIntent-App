@@ -1,6 +1,7 @@
 package org.javaapp.criminalintent
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.room.Room
 import org.javaapp.criminalintent.database.CrimeDao
 import org.javaapp.criminalintent.database.CrimeDatabase
@@ -21,8 +22,8 @@ class CrimeRepository private constructor(context : Context) { // 생성자를 p
     private val crimeDao : CrimeDao = database.crimeDao()
 
     // DAO의 데이터베이스 액세스 함수들을 사용하기 위한 함수 추가
-    fun getCrimes() : List<Crime> = crimeDao.getCrimes()
-    fun getCrime(id: UUID) : Crime? = crimeDao.getCrime(id)
+    fun getCrimes() : LiveData<List<Crime>> = crimeDao.getCrimes()
+    fun getCrime(id: UUID) : LiveData<Crime?> = crimeDao.getCrime(id)
 
     companion object {
         private var INSTANCE : CrimeRepository? = null // 인스턴스
