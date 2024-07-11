@@ -25,7 +25,8 @@ class MainActivity : AppCompatActivity(), CrimeListFragment.Callbacks{
     }
 
     override fun onCrimeSelected(crimeId: UUID) {
-        Log.d(TAG, "MainActivity.onCrimeSelected: $crimeId")
+        val fragment = CrimeFragment.newInstance(crimeId)
+        supportFragmentManager.beginTransaction().replace(R.id.fragment_container, fragment).addToBackStack(null).commit() // addToBackStack(null) : 트랜잭션을 백스택에 추가
     }
 
 

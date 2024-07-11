@@ -10,6 +10,9 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import java.util.UUID
+
+private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
 
 class CrimeFragment : Fragment() {
     private lateinit var crime : Crime
@@ -27,6 +30,8 @@ class CrimeFragment : Fragment() {
          */
 
         crime = Crime()
+
+        
     }
 
     override fun onCreateView(
@@ -71,6 +76,18 @@ class CrimeFragment : Fragment() {
         solvedCheckBox.apply { 
             setOnCheckedChangeListener { _, isChecked ->
                 crime.isSolved = isChecked
+            }
+        }
+    }
+
+    companion object {
+        fun newInstance(crimeId : UUID) : CrimeFragment {
+            val args = Bundle().apply { // 인자 번들 생성
+                putSerializable(ARG_CRIME_ID, crimeId) // 인자 저장
+            }
+            
+            return CrimeFragment().apply { // 프래그먼트 인스턴스 생성
+                arguments = args // 인자 번들 첨부
             }
         }
     }
