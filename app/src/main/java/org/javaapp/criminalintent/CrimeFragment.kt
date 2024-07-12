@@ -11,6 +11,8 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import java.util.UUID
 
 private const val TAG = "CrimeFragment"
@@ -23,6 +25,10 @@ class CrimeFragment : Fragment() {
     private lateinit var dateButton : Button
     private lateinit var solvedCheckBox : CheckBox
 
+    private  val crimeDetailViewModel : CrimeDetailViewModel by lazy {  // 뷰모델
+        ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) { // public, 프래그먼트를 호스팅하는 어떤 액티비티에서도 자동 호출될 것이므로 public이어야만 함
         super.onCreate(savedInstanceState)
 
@@ -33,8 +39,8 @@ class CrimeFragment : Fragment() {
 
         crime = Crime()
 
-        val crimeId : UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID
-        Log.d(TAG, "args bundle crime ID : $crimeId")
+        val crimeId : UUID = arguments?.getSerializable(ARG_CRIME_ID) as UUID // 프래그먼트 인자 가져오기
+        crimeDetailViewModel.loadCrime(crimeId) // CrimeFragment를 CrimeDetailViewModel과 연결
     }
 
     override fun onCreateView(
@@ -54,6 +60,20 @@ class CrimeFragment : Fragment() {
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
 
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) { // 프래그먼트에 다시 돌아오면 관찰을 재개
+        super.onViewCreated(view, savedInstanceState)
+        
+        crimeDetailViewModel.crimeLiveData.observe( // CrimeDetailViewModel의 crimeLiveData가 변경되는지 관찰
+            viewLifecycleOwner, // 프래그먼트 뷰의 생명주기에 맞춰서 사용자가 프래그먼트를 떠나면 자동으로 관찰을 중지
+            Observer { crime -> // crime : 데이터베이스에 현재 저장된 것을 나타낸다.
+                crime?.let { // 새 데이터가 있으면
+                    this.crime = crime // this.crime : 프래그먼트가 화면에 나타내는 데이터
+                    updateUI() // UI 변경
+                }
+            }
+        )
     }
 
     override fun onStart() {
@@ -81,6 +101,12 @@ class CrimeFragment : Fragment() {
                 crime.isSolved = isChecked
             }
         }
+    }
+
+    private fun updateUI() {
+        titleField.setText(crime.title)
+        dateButton.text = crime.date.toString()
+        solvedCheckBox.isChecked = crime.isSolved
     }
 
     companion object {
