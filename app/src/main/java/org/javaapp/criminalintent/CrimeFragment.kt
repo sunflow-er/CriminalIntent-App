@@ -103,10 +103,17 @@ class CrimeFragment : Fragment() {
         }
     }
 
+    override fun onStop() { // 프래그먼트가 중단 상태(프래그먼트 화면 전체가 안보이는 상태)일 때 호출
+        super.onStop()
+        crimeDetailViewModel.saveCrime(crime)
+    }
+
     private fun updateUI() {
         titleField.setText(crime.title)
         dateButton.text = crime.date.toString()
-        solvedCheckBox.isChecked = crime.isSolved
+        solvedCheckBox.apply { 
+            isChecked = crime.isSolved
+        }
     }
 
     companion object {

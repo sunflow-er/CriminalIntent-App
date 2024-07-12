@@ -22,5 +22,9 @@ class CrimeDetailViewModel : ViewModel() {
     fun loadCrime(crimeId : UUID) { // CrimeFragment가 생성될 때 onCreate()에서 호출
         crimeIdLiveData.value = crimeId
     }
+    
+    fun saveCrime(crime : Crime) { // 인자로 받은 Crime 객체를 데이터베이스에 변경
+        crimeRepository.updateCrime(crime)
+    }
 
 }
