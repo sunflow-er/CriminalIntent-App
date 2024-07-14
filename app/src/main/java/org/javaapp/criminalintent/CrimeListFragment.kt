@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -93,9 +94,24 @@ class CrimeListFragment : Fragment() {
         callbacks = null
     }
 
+    // 사용자 인터페이스를 처음으로 생성할 때, 시스템에 의해 호출됨
+    // 프래그먼트가 메뉴를 가질 수 있음을 시스템에 알리고, 앱 바에 메뉴 항목을 추가 -> 메뉴 항목의 동적 추가
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.fragment_crime_list, menu) // 리소스 파일에 정의된 액션 항목들로 menu가 채워진다.
+        inflater.inflate(R.menu.fragment_crime_list, menu) // 메뉴 리소스를 menu(Menu 인스턴스)로 인플레이트
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.new_crime -> {
+                val crime = Crime()
+                crimeListViewModel.addCrime(crime)
+                callbacks?.onCrimeSelected(crime.id)
+                true // 정상적으로 처리한 경우 더 이상의 처리가 필요 없음을 나타내는 true 반환
+                // false // 호스팅 액티비티의 onOptionsItemSelected(MenuItme) 함수를 호출해 메뉴 처리가 계속됨
+            }
+            else -> return super.onOptionsItemSelected(item) 
+        }
     }
 
     private fun updateUI(crimes: List<Crime>) {
