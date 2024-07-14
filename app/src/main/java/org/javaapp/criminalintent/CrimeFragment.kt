@@ -16,13 +16,15 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import java.util.Date
 import java.util.UUID
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
 private const val DIALOG_DATE = "DialogDate" // DatePickerFragment 태그 상수
+private const val REQUEST_DATE   = 0 // 대상 프래그먼트(target fragment) 요청 코드
 
-class CrimeFragment : Fragment() {
+class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var crime : Crime
 
     private lateinit var titleField: EditText
@@ -106,6 +108,7 @@ class CrimeFragment : Fragment() {
         dateButton.setOnClickListener {
             // DatePickerFragment 보여주기
             DatePickerFragment.newInstance(crime.date).apply {
+                setTargetFragment(this@CrimeFragment, REQUEST_DATE)
                 show(this@CrimeFragment.parentFragmentManager, DIALOG_DATE) // show(호스팅 액비티티 프래그먼트 매니저, 프래그먼트 식별 상수)
             }
         }
@@ -114,6 +117,12 @@ class CrimeFragment : Fragment() {
     override fun onStop() { // 프래그먼트가 중단 상태(프래그먼트 화면 전체가 안보이는 상태)일 때 호출
         super.onStop()
         crimeDetailViewModel.saveCrime(crime)
+    }
+
+    // DatePickerFragment 콜백 인터페이스 구현
+    override fun onDateSelected(date: Date) {
+        crime.date = date
+        updateUI()
     }
 
     private fun updateUI() {
