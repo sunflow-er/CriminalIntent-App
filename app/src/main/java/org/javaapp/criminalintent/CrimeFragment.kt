@@ -1,5 +1,7 @@
 package org.javaapp.criminalintent
 
+import android.app.DatePickerDialog
+import android.app.ProgressDialog.show
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.DatePicker
 import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -17,6 +20,7 @@ import java.util.UUID
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
+private const val DIALOG_DATE = "DialogDate" // DatePickerFragment 태그 상수
 
 class CrimeFragment : Fragment() {
     private lateinit var crime : Crime
@@ -53,10 +57,6 @@ class CrimeFragment : Fragment() {
         // 참조값 가져오기
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
-        dateButton.apply {
-            text = crime.date.toString()
-            isEnabled = false // 버튼 비활성화
-        }
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
 
         return view
@@ -99,6 +99,14 @@ class CrimeFragment : Fragment() {
         solvedCheckBox.apply { 
             setOnCheckedChangeListener { _, isChecked ->
                 crime.isSolved = isChecked
+            }
+        }
+
+        // DateButton 리스너 설정
+        dateButton.setOnClickListener {
+            // DatePickerFragment 보여주기
+            DatePickerFragment.newInstance(crime.date).apply {
+                show(this@CrimeFragment.parentFragmentManager, DIALOG_DATE) // show(호스팅 액비티티 프래그먼트 매니저, 프래그먼트 식별 상수)
             }
         }
     }
