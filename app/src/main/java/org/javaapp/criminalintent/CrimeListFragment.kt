@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -50,6 +52,12 @@ class CrimeListFragment : Fragment() {
         callbacks = context as Callbacks
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setHasOptionsMenu(true) // CrimeListFragment가 메뉴 콜백 호출을 받아야 함을 FragmentManager에 알려줌
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -83,6 +91,11 @@ class CrimeListFragment : Fragment() {
     override fun onDetach() { // 프래그먼트가 액티비티에서 분리될 때 호출
         super.onDetach()
         callbacks = null
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.fragment_crime_list, menu) // 리소스 파일에 정의된 액션 항목들로 menu가 채워진다.
     }
 
     private fun updateUI(crimes: List<Crime>) {
