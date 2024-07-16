@@ -2,6 +2,7 @@ package org.javaapp.criminalintent
 
 import android.app.DatePickerDialog
 import android.app.ProgressDialog.show
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -18,11 +19,13 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import java.util.Date
 import java.util.UUID
+import android.text.format.DateFormat
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
 private const val DIALOG_DATE = "DialogDate" // DatePickerFragment 태그 상수
 private const val REQUEST_DATE   = 0 // 대상 프래그먼트(target fragment) 요청 코드
+private const val DATE_FORMAT = "yyyy년 M월 d일 H시 m분, E요일"
 
 class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var crime : Crime
@@ -30,6 +33,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var titleField: EditText
     private lateinit var dateButton : Button
     private lateinit var solvedCheckBox : CheckBox
+    private lateinit var reportButton: Button
 
     private  val crimeDetailViewModel : CrimeDetailViewModel by lazy {  // 뷰모델
         ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
@@ -60,6 +64,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         titleField = view.findViewById(R.id.crime_title) as EditText
         dateButton = view.findViewById(R.id.crime_date) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
+        reportButton = view.findViewById(R.id.crime_report) as Button
 
         return view
     }
@@ -112,6 +117,18 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                 show(this@CrimeFragment.parentFragmentManager, DIALOG_DATE) // show(호스팅 액비티티 프래그먼트 매니저, 프래그먼트 식별 상수)
             }
         }
+
+        // report버튼 리스너 설정
+        reportButton.setOnClickListener {
+            // 범죄 보고서를 발송
+            Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, getCrimeReport()) // 보고서의 텍스트
+                putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject)) // 보고서의 제목
+            }.also { intent ->
+                startActivity(intent)
+            }
+        }
     }
 
     override fun onStop() { // 프래그먼트가 중단 상태(프래그먼트 화면 전체가 안보이는 상태)일 때 호출
@@ -131,6 +148,28 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         solvedCheckBox.apply { 
             isChecked = crime.isSolved
         }
+    }
+
+    // 문자열 네 개를 생성하고 결합해 하나의 완전한 보고서 문자열로 반환
+    private fun getCrimeReport() : String {
+        // 문제 해결 여부
+        val solvedString = if (crime.isSolved) {
+            getString(R.string.crime_report_solved)
+        } else {
+            getString(R.string.crime_report_unsolved)
+        }
+
+        // 날짜
+        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+
+        // 용의자
+        var suspect = if (crime.suspect.isBlank()) {
+            getString(R.string.crime_report_no_suspect)
+        } else {
+            getString(R.string.crime_report_suspect, crime.suspect)
+        }
+
+        return getString(R.string.crime_report, crime.title, dateString, solvedString, suspect)
     }
 
     companion object {

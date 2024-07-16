@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Room
 import org.javaapp.criminalintent.database.CrimeDao
 import org.javaapp.criminalintent.database.CrimeDatabase
+import org.javaapp.criminalintent.database.migration_1_2
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -17,7 +18,8 @@ class CrimeRepository private constructor(context : Context) { // 생성자를 p
         context.applicationContext,
         CrimeDatabase::class.java,
         DATABASE_NAME
-    ).build()
+    ).addMigrations(migration_1_2) // Migration 객체는 데이터베이스를 생성할 때 제공
+        .build() 
 
     // DAO 객체를 참조하는 속성 추가
     private val crimeDao : CrimeDao = database.crimeDao()
