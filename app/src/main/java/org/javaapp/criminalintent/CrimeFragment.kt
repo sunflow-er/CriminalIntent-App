@@ -1,8 +1,10 @@
 package org.javaapp.criminalintent
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.ProgressDialog.show
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
 import android.provider.Settings.System.DATE_FORMAT
@@ -22,6 +24,7 @@ import androidx.lifecycle.ViewModelProvider
 import java.util.Date
 import java.util.UUID
 import android.text.format.DateFormat
+import androidx.room.util.query
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
@@ -169,6 +172,37 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        when {
+            resultCode != Activity.RESULT_OK -> return
+
+            requestCode == REQUEST_CONTACT && data != null -> {
+                val contactUri : Uri = data.data ?: return // URI 정보
+
+                // 쿼리에서 값으로 반환할 필드를 지정
+                val queryFields = arrayOf(ContactsContract.Contacts.DISPLAY_NAME)
+
+                // 쿼리를 수행
+                val cursor = requireActivity().contentResolver.query(contactUri, queryFields, null, null, null)
+
+                cursor?.use {
+                    // 쿼리 결과 데이터가 있는지 확인
+                    if (it.count == 0) {
+                        return
+                    }
+
+                    // 첫 번째 데이터 행의 첫 번째 열의 값을 가져온다. 이 값이 용의자의 이름이다.
+                    it.moveToFirst() // 첫 번째 행으로 이동
+                    val suspect = it.getString(0) // 첫 번째 열의 값 가져오기
+                    
+                    crime.suspect = suspect
+                    crimeDetailViewModel.saveCrime(crime) // 데이터베이스 저장 및 업데이트
+                    suspectButton.text = suspect
+                }
+            }
+        }
+    }
+
     // 문자열 네 개를 생성하고 결합해 하나의 완전한 보고서 문자열로 반환
     private fun getCrimeReport() : String {
         // 문제 해결 여부
@@ -179,7 +213,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         }
 
         // 날짜
-        val dateString = DateFormat.format(DATE_FORMAT, crime.date).toString()
+        val dateString = DateFormat.format(org.javaapp.criminalintent.DATE_FORMAT, crime.date).toString()
 
         // 용의자
         var suspect = if (crime.suspect.isBlank()) {
