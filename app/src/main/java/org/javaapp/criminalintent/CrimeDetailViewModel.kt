@@ -14,7 +14,6 @@ class CrimeDetailViewModel : ViewModel() {
     
 
     var crimeLiveData : LiveData<Crime?> = // 상세 내역 화면에 보여줄 Crime 객체를 저장한 LiveData 참조
-
         // CrimeIdLiveData가 변경될 때마다 해당 crimeId에 해당하는 Crime LiveData를 반환하고 이를 관찰한다. (이전 LiveData의 관찰은 중단)
         crimeIdLiveData.switchMap { crimeId ->
         crimeRepository.getCrime(crimeId)

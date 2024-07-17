@@ -9,6 +9,7 @@ import android.content.pm.ResolveInfo
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.MediaStore
 import android.provider.Settings.System.DATE_FORMAT
 import android.text.Editable
 import android.text.TextWatcher
@@ -28,17 +29,22 @@ import java.util.UUID
 import android.text.format.DateFormat
 import android.widget.ImageButton
 import android.widget.ImageView
+import androidx.core.content.FileProvider
 import androidx.room.util.query
+import java.io.File
 
 private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
 private const val DIALOG_DATE = "DialogDate" // DatePickerFragment 태그 상수
 private const val REQUEST_DATE = 0 // 대상 프래그먼트(target fragment) 요청 코드
 private const val REQUEST_CONTACT = 1
+private const val REQUEST_PHOTO = 2
 private const val DATE_FORMAT = "yyyy년 M월 d일 H시 m분, E요일"
 
 class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var crime: Crime
+    private lateinit var photoFile : File // 사진 파일의 위치
+    private lateinit var photoUri : Uri // FileProvider에 의해 서비스되는 위치
 
     private lateinit var titleField: EditText
     private lateinit var dateButton: Button
@@ -93,6 +99,8 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
             Observer { crime -> // crime : 데이터베이스에 현재 저장된 것을 나타낸다.
                 crime?.let { // 새 데이터가 있으면
                     this.crime = crime // this.crime : 프래그먼트가 화면에 나타내는 데이터
+                    photoFile = crimeDetailViewModel.getPhotoFile(crime)
+                    photoUri = FileProvider.getUriForFile(requireActivity(), "org.javaapp.criminalIntent.fileprovider", photoFile) // FileProvider를 통해 사진 파일(photoFile)에 대한 URI 값 얻기
                     updateUI() // UI 변경
                 }
             }
@@ -168,10 +176,38 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
             val packageManager: PackageManager = requireActivity().packageManager // 안드로이드 장치에 설치된 모든 컴포넌트와 이것들의 모든 액티비티를 알고 있음
             val resolvedActivity: ResolveInfo? = packageManager.resolveActivity( // 액티비티를 찾는다. startActivity(Intent)와 비슷
                 pickContactIntent, // 인텐트
-                PackageManager.MATCH_DEFAULT_ONLY // 플래그
+                PackageManager.MATCH_DEFAULT_ONLY // 플래그 : 해당 인텐트를 처리할 수 있는 액티비티들 중에서 사용자가 기본(MATCH_DEFAULT_ONLY)으로 설정한 앱이나 시스템이 기본으로 인식하는 앱으로 범위를 제한
             )  // 액티비티가 있으면 이것들의 정보를 갖는 ResolveInfo 인스턴스 반환, 없으면 null 반환
             if (resolvedActivity == null) { // 액티비티가 없을 경우
                 isEnabled = false // 버튼 비활성화
+            }
+        }
+
+        photoButton.apply {
+            val packageManager : PackageManager = requireActivity().packageManager
+
+            val captureImage = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            val resolvedActivity : ResolveInfo? = packageManager.resolveActivity(captureImage, PackageManager.MATCH_DEFAULT_ONLY)
+
+            if (resolvedActivity == null) {
+                isEnabled == false
+            }
+
+            setOnClickListener {
+                captureImage.putExtra(MediaStore.EXTRA_OUTPUT, photoUri) // 사진 파일을 저장할 위치를 가리키는 Uri를 값으로 전달
+
+                val cameraActivities : List<ResolveInfo> = packageManager.queryIntentActivities(captureImage,PackageManager.MATCH_DEFAULT_ONLY)
+
+                for (cameraActivity in cameraActivities) {
+                    // photoUri가 가리키는 위치에 카메라 앱 엑세스 퍼미션
+                    requireActivity().grantUriPermission(
+                        cameraActivity.activityInfo.packageName, // Uri에 대한 접근을 허용할 패키지
+                        photoUri, // Uri
+                        Intent.FLAG_GRANT_WRITE_URI_PERMISSION // 접근 모드
+                    )
+                }
+
+                startActivityForResult(captureImage, REQUEST_PHOTO)
             }
         }
 
