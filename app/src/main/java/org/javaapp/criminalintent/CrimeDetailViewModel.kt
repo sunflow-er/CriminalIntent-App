@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.switchMap
+import java.io.File
 import java.util.UUID
 
 
@@ -25,6 +26,10 @@ class CrimeDetailViewModel : ViewModel() {
     
     fun saveCrime(crime : Crime) { // 인자로 받은 Crime 객체를 데이터베이스에 변경
         crimeRepository.updateCrime(crime)
+    }
+
+    fun getPhotoFile(crime : Crime) : File {
+        return crimeRepository.getPhotoFile(crime)
     }
 
 }

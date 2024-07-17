@@ -6,6 +6,7 @@ import androidx.room.Room
 import org.javaapp.criminalintent.database.CrimeDao
 import org.javaapp.criminalintent.database.CrimeDatabase
 import org.javaapp.criminalintent.database.migration_1_2
+import java.io.File
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -19,12 +20,11 @@ class CrimeRepository private constructor(context : Context) { // 생성자를 p
         CrimeDatabase::class.java,
         DATABASE_NAME
     ).addMigrations(migration_1_2) // Migration 객체는 데이터베이스를 생성할 때 제공
-        .build() 
+        .build()
 
-    // DAO 객체를 참조하는 속성 추가
-    private val crimeDao : CrimeDao = database.crimeDao()
-
+    private val crimeDao : CrimeDao = database.crimeDao() // DAO 객체를 참조하는 속성 추가
     private val executor = Executors.newSingleThreadExecutor() // 새로운 스레드를 참조하는 executor
+    private val filesDir = context.applicationContext.filesDir // 파일이 저장되는 디렉터리의 절대 경로
 
     // DAO의 데이터베이스 액세스 함수들을 사용하기 위한 함수 추가
     fun getCrimes() : LiveData<List<Crime>> = crimeDao.getCrimes()
@@ -41,6 +41,8 @@ class CrimeRepository private constructor(context : Context) { // 생성자를 p
             crimeDao.addCrime(crime)
         }
     }
+
+    fun getPhotoFile(crime : Crime) : File = File(filesDir, crime.photoFileName) // filesDir 경로 디렉터리에 있는 crime.photoFileName 파일 인스턴스를 생성하여 반환
 
 
     companion object {
