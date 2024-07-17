@@ -4,6 +4,8 @@ import android.app.DatePickerDialog
 import android.app.ProgressDialog.show
 import android.content.Intent
 import android.os.Bundle
+import android.provider.ContactsContract
+import android.provider.Settings.System.DATE_FORMAT
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
@@ -25,6 +27,7 @@ private const val TAG = "CrimeFragment"
 private const val ARG_CRIME_ID = "crime_id" // 인자를 번들에 저장할 때 사용하는 키의 문자열 상수
 private const val DIALOG_DATE = "DialogDate" // DatePickerFragment 태그 상수
 private const val REQUEST_DATE   = 0 // 대상 프래그먼트(target fragment) 요청 코드
+private const val REQUEST_CONTACT = 1
 private const val DATE_FORMAT = "yyyy년 M월 d일 H시 m분, E요일"
 
 class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
@@ -34,6 +37,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
     private lateinit var dateButton : Button
     private lateinit var solvedCheckBox : CheckBox
     private lateinit var reportButton: Button
+    private lateinit var suspectButton: Button
 
     private  val crimeDetailViewModel : CrimeDetailViewModel by lazy {  // 뷰모델
         ViewModelProvider(this).get(CrimeDetailViewModel::class.java)
@@ -65,6 +69,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         dateButton = view.findViewById(R.id.crime_date) as Button
         solvedCheckBox = view.findViewById(R.id.crime_solved) as CheckBox
         reportButton = view.findViewById(R.id.crime_report) as Button
+        suspectButton = view.findViewById(R.id.crime_suspect) as Button
 
         return view
     }
@@ -118,7 +123,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
             }
         }
 
-        // report버튼 리스너 설정
+        // reportButton 리스너 설정
         reportButton.setOnClickListener {
             // 범죄 보고서를 발송
             Intent(Intent.ACTION_SEND).apply {
@@ -126,7 +131,17 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                 putExtra(Intent.EXTRA_TEXT, getCrimeReport()) // 보고서의 텍스트
                 putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject)) // 보고서의 제목
             }.also { intent ->
-                startActivity(intent)
+                val chooserIntent = Intent.createChooser(intent, getString(R.string.send_report))
+                startActivity(chooserIntent)
+            }
+        }
+
+        // suspectButton 리스너 설정
+        suspectButton.apply {
+            val pickContactIntent = Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI)
+
+            setOnClickListener {
+                startActivityForResult(pickContactIntent, REQUEST_CONTACT)
             }
         }
     }
@@ -147,6 +162,10 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         dateButton.text = crime.date.toString()
         solvedCheckBox.apply { 
             isChecked = crime.isSolved
+        }
+
+        if (crime.suspect.isNotEmpty()) { // 용의자가 선정되었을 때
+            suspectButton.text = crime.suspect // suspectButton에 텍스트 설정
         }
     }
 
