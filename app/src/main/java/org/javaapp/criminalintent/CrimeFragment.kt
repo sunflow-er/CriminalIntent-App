@@ -100,7 +100,7 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                 crime?.let { // 새 데이터가 있으면
                     this.crime = crime // this.crime : 프래그먼트가 화면에 나타내는 데이터
                     photoFile = crimeDetailViewModel.getPhotoFile(crime)
-                    photoUri = FileProvider.getUriForFile(requireActivity(), "org.javaapp.criminalIntent.fileprovider", photoFile) // FileProvider를 통해 사진 파일(photoFile)에 대한 URI 값 얻기
+                    photoUri = FileProvider.getUriForFile(requireActivity(), "org.javaapp.criminalintent.fileprovider", photoFile) // FileProvider를 통해 사진 파일(photoFile)에 대한 URI 값 얻기
                     updateUI() // UI 변경
                 }
             }
