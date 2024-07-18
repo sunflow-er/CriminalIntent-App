@@ -224,6 +224,11 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
         updateUI()
     }
 
+    override fun onDetach() { // 부적합한 응답이 생길 가능성에 대비
+        super.onDetach()
+        requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION) // Uri에 파일을 쓸 수 있는 퍼미션 취소
+    }
+
     private fun updateUI() {
         titleField.setText(crime.title)
         dateButton.text = crime.date.toString()
@@ -233,6 +238,18 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
 
         if (crime.suspect.isNotEmpty()) { // 용의자가 선정되었을 때
             suspectButton.text = crime.suspect // suspectButton에 텍스트 설정
+        }
+
+        updatePhotoView()
+    }
+
+    // ImageView에 Bitmap 업로드
+    private fun updatePhotoView() {
+        if (photoFile.exists()) {
+            val bitmap = getScaledBitmap(photoFile.path, requireActivity())
+            photoView.setImageBitmap(bitmap)
+        } else {
+            photoView.setImageDrawable(null)
         }
     }
 
@@ -269,6 +286,11 @@ class CrimeFragment : Fragment(), DatePickerFragment.Callbacks {
                     crimeDetailViewModel.saveCrime(crime) // 데이터베이스 저장 및 업데이트
                     suspectButton.text = suspect
                 }
+            }
+
+            requestCode == REQUEST_PHOTO -> {
+                requireActivity().revokeUriPermission(photoUri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION) // Uri에 파일을 쓸 수 있는 퍼미션 취소
+                updatePhotoView()
             }
         }
     }
